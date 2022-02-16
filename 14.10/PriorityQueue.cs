@@ -4,18 +4,18 @@ namespace _14._10
 {
     public class PriorityQueue
     {
-        private int total_size;
-        readonly SortedDictionary<int, Queue<int>> storage;
+        private int _totalSize;
+        private readonly SortedDictionary<int, Queue<int>> _storage;
 
         public PriorityQueue()
         {
-            storage = new SortedDictionary<int, Queue<int>>();
-            total_size = 0;
+            _storage = new SortedDictionary<int, Queue<int>>();
+            _totalSize = 0;
         }
 
         public bool IsEmpty()
         {
-            return total_size == 0;
+            return _totalSize == 0;
         }
 
         public int? Dequeue()
@@ -23,11 +23,11 @@ namespace _14._10
             if ( IsEmpty() )
                 return null;
             else
-                foreach ( Queue<int> queue in storage.Values )
+                foreach ( Queue<int> queue in _storage.Values )
                 {
                     if ( queue.Count > 0 )
                     {
-                        total_size--;
+                        _totalSize--;
                         return queue.Dequeue();
                     }
                 }
@@ -37,19 +37,19 @@ namespace _14._10
 
         public object Dequeue( int item )
         {
-            total_size--;
+            _totalSize--;
 
-            return storage[ item ].Dequeue();
+            return _storage[ item ].Dequeue();
         }
 
         public void Enqueue( int item )
         {
-            if ( !storage.ContainsKey( item ) )
+            if ( !_storage.ContainsKey( item ) )
             {
-                storage.Add( item, new Queue<int>() );
+                _storage.Add( item, new Queue<int>() );
             }
-            storage[ item ].Enqueue( item );
-            total_size++;
+            _storage[ item ].Enqueue( item );
+            _totalSize++;
         }
     }
 }

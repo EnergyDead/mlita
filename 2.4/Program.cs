@@ -10,65 +10,57 @@ namespace _2._4
     {
         const string inputFileName = "input.txt";
         const string outputFileName = "output.txt";
-        const int INF = int.MaxValue / 2;
+
         static void Main( string[] args )
         {
             string[] input = File.ReadAllLines( inputFileName );
             int n = int.Parse( input[ 0 ] );
             List<int> fiel = input[ 1 ].Split( " " ).Select( ch => int.Parse( ch ) ).ToList();
-            int Max = fiel.Max();
-            List<int> nearest = Enumerable.Repeat( 0, n ).ToList();
-            List<int> pos = Enumerable.Repeat( -1, Max + 1 ).ToList();
 
-            for ( int i = n - 1; i >= 0; i-- )
+            List<int> next = Enumerable.Repeat( 0, n + 1 ).ToList();
+            List<int> last = Enumerable.Repeat( 0, 1 + 300 * 1000 ).ToList();
+
+            for ( int i = n; i >= 1; i-- )
             {
-                nearest[ i ] = pos[ fiel[ i ] ];
-                pos[ fiel[ i ] ] = i;
+                next[ i ] = last[ fiel[ i - 1 ] ];
+                last[ fiel[ i - 1 ] ] = i;
             }
-            List<int> dist = Enumerable.Repeat( INF, n ).ToList();
-            List<int> from = Enumerable.Repeat( -1, n ).ToList();
-            List<Pair> queue = new List<Pair>();
-            queue.Add( new Pair() );
-            for ( int i = 0; i < n; i++ )
+            List<int> result = new List<int>();
+            int from = 1;
+            result.Add( from );
+            int rangeFirst = 2;
+            while ( true )
             {
-                queue = queue.OrderBy( p => p.value ).ToList();
-                queue.Reverse();
-                while ( queue.Count > 0 && queue[ 0 ].time < i )
+                if ( next[ from ] == n )
                 {
-                    queue.Remove( queue[ 0 ] );
+                    Console.WriteLine( string.Join( " ", result.Select( ch => ch.ToString() ) ) );
+                    return;
                 }
-                if ( queue.Count == 0 )
+                if ( next[ from ] == 0 )
                 {
                     Console.WriteLine( "0" );
                     return;
                 }
-                dist[ i ] = queue[ 0 ].value;
-                from[ i ] = queue[ 0 ].from;
-                queue.Add( new Pair()
+                int rangeLast = next[ from ];
+                int maxNext = 0;
+                int maxNextIndex = 0;
+                for ( int i = rangeFirst; i <= rangeLast; i++ )
                 {
-                    value = dist[ i ] + 1,
-                    time = nearest[ i ],
-                    from = i
-                } );
+                    if ( next[ i ] > maxNext )
+                    {
+                        maxNext = next[ i ];
+                        maxNextIndex = i;
+                    }
+                }
+                if ( maxNext <= rangeLast )
+                {
+                    Console.WriteLine( "0" );
+                    return;
+                }
+                rangeFirst = rangeLast + 1;
+                from = maxNextIndex;
+                result.Add( from );
             }
-            List<int> result = new List<int>();
-            for ( int i = dist[ n - 1 ], j = from[ n - 1 ]; i > 0; i-- )
-            {
-                result.Add( j + 1 );
-                j = from[ j ];
-
-            }
-            result.Reverse();
-
-            Console.WriteLine( string.Join( " ", result.Select( ch => ch.ToString() ) ) );
-            Console.WriteLine( "Hello World!" );
-        }
-
-        public struct Pair
-        {
-            public int value;
-            public int time;
-            public int from;
         }
     }
 }

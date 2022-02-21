@@ -16,14 +16,14 @@ namespace _1._9
 
             foreach ( var lake in lakes )
             {
-                result.Add( SearchDam( lake ) );
+                result.Add( MinDamLength( lake ) );
             }
             File.WriteAllText( outputFileName, String.Join( " ", result ) );
         }
 
-        private static int SearchDam( Lake lake )
+        private static int MinDamLength( Lake lake )
         {
-            if ( lake.points.Length == 2 )
+            if ( lake.points.Length == 12 )
             {
                 return 1;
             }
@@ -41,14 +41,12 @@ namespace _1._9
                                 {
                                     Lake points = (Lake)lake.Clone();
 
-                                    if ( CountLend2( points, y, x + 1 ) )
+                                    if ( LikeSizeIsOne( points, y, x + 1 ) )
                                     {
                                         return 1;
                                     }
-
                                     points.points[ y, x + 1 ] = Type.land;
-
-                                    if ( HasMoreLand( points, y, x ) > 1 )
+                                    if ( CountLand( points, y, x ) > 1 )
                                     {
                                         return 1;
                                     }
@@ -63,12 +61,12 @@ namespace _1._9
                                 {
                                     Lake points = (Lake)lake.Clone();
 
-                                    if ( CountLend( points, y + 1, x ) )
+                                    if ( LikeSizeIsOneReverse( points, y + 1, x ) )
                                     {
                                         return 1;
                                     }
                                     points.points[ y + 1, x ] = Type.land;
-                                    if ( HasMoreLand( points, y, x ) > 1 )
+                                    if ( CountLand( points, y, x ) > 1 )
                                     {
                                         return 1;
                                     }
@@ -82,23 +80,23 @@ namespace _1._9
             return 2;
         }
 
-        private static bool CountLend( Lake points, int y, int x )
-        {
-            var a = ( y + 1 < points.points.GetLength( 0 ) && points.points[ y + 1, x ] == Type.land );
-            var b = ( x + 1 < points.points.GetLength( 1 ) && points.points[ y, x + 1 ] == Type.land );
-            var c = ( x - 1 > 0 && points.points[ y, x - 1 ] == Type.land );
-            return a && b && c;
-        }
-
-        private static bool CountLend2( Lake points, int y, int x )
+        private static bool LikeSizeIsOne( Lake points, int y, int x )
         {
             var a = ( x + 1 < points.points.GetLength( 1 ) && points.points[ y, x + 1 ] == Type.land );
             var b = ( y + 1 < points.points.GetLength( 0 ) && points.points[ y + 1, x ] == Type.land );
-            var c = ( y - 1 > 0 && points.points[ y - 1, x ] == Type.land );
+            var c = ( y - 1 >= 0 && points.points[ y - 1, x ] == Type.land );
             return a && b && c;
         }
 
-        private static int HasMoreLand( Lake points, int y, int x )
+        private static bool LikeSizeIsOneReverse( Lake points, int y, int x )
+        {
+            var a = ( y + 1 < points.points.GetLength( 0 ) && points.points[ y + 1, x ] == Type.land );
+            var b = ( x + 1 < points.points.GetLength( 1 ) && points.points[ y, x + 1 ] == Type.land );
+            var c = ( x - 1 >= 0 && points.points[ y, x - 1 ] == Type.land );
+            return a && b && c;
+        }
+
+        private static int CountLand( Lake points, int y, int x )
         {
             var f = points.points;
             int count = 0;
@@ -108,7 +106,7 @@ namespace _1._9
                 {
                     if ( f[ i, j ] == Type.water )
                     {
-                        dfs( f, i, j );
+                        DeleteLand( f, i, j );
                         count++;
                     }
                 }
@@ -116,19 +114,19 @@ namespace _1._9
             return count;
         }
 
-        static void dfs( Type[,] f, int i, int j )
+        static void DeleteLand( Type[,] f, int i, int j )
         {
             if ( f[ i, j ] == Type.water )
             {
                 f[ i, j ] = Type.land;
-                if ( i + 1 < f.GetLength( 0 ) )
-                    dfs( f, i + 1, j );
-                if ( i - 1 >= 0 )
-                    dfs( f, i - 1, j );
-                if ( j + 1 < f.GetLength( 1 ) )
-                    dfs( f, i, j + 1 );
-                if ( j - 1 >= 0 )
-                    dfs( f, i, j - 1 );
+                // if ( i + 1 < f.GetLength( 0 ) )
+                DeleteLand( f, i + 1, j );
+                // if ( i - 1 >= 0 )
+                DeleteLand( f, i - 1, j );
+                // if ( j + 1 < f.GetLength( 1 ) )
+                DeleteLand( f, i, j + 1 );
+                // if ( j - 1 >= 0 )
+                DeleteLand( f, i, j - 1 );
             }
         }
 
@@ -168,8 +166,24 @@ namespace _1._9
 
             return lakes;
         }
-    }
 
+        /// <summary>
+        /// debug helper
+        /// </summary>
+        /// <param name="land"></param>
+        static void Print( Type[,] land )
+        {
+            for ( int i = 0; i < land.GetLength( 0 ); i++ )
+            {
+                for ( int j = 0; j < land.GetLength( 1 ); j++ )
+                {
+                    Console.Write( "{0}", (char)land[ i, j ] );
+                }
+                Console.WriteLine();
+            }
+            Console.WriteLine();
+        }
+    }
 
     struct Lake : ICloneable
     {

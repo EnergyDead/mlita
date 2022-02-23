@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -13,11 +14,17 @@ namespace _1._9
         {
             List<Lake> lakes = ReadLakes();
             List<int> result = new List<int>( lakes.Count );
-
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
             foreach ( var lake in lakes )
             {
+
+                // Print( lake.points );
                 result.Add( MinDamLength( lake ) );
             }
+            stopWatch.Stop();
+            Console.WriteLine( stopWatch.ElapsedMilliseconds );
+            Console.WriteLine( String.Join( " ", result ) );
             File.WriteAllText( outputFileName, String.Join( " ", result ) );
         }
 
@@ -45,8 +52,10 @@ namespace _1._9
                                     {
                                         return 1;
                                     }
-                                    points.points[ y, x + 1 ] = Type.land;
-                                    if ( CountLand( points, y, x ) > 1 )
+                                    points.points[ y, x + 1 ] = Type.newLake;
+
+                                    var first = CountLandQueue( points, y, x );
+                                    if ( first == 1 )
                                     {
                                         return 1;
                                     }
@@ -65,8 +74,9 @@ namespace _1._9
                                     {
                                         return 1;
                                     }
-                                    points.points[ y + 1, x ] = Type.land;
-                                    if ( CountLand( points, y, x ) > 1 )
+                                    points.points[ y + 1, x ] = Type.newLake;
+                                    var first = CountLandQueue( points, y, x );
+                                    if ( first == 1 )
                                     {
                                         return 1;
                                     }
@@ -96,38 +106,77 @@ namespace _1._9
             return a && b && c;
         }
 
-        private static int CountLand( Lake points, int y, int x )
+        static int CountLandQueue( Lake lake, int y, int x )
         {
-            var f = points.points;
-            int count = 0;
-            for ( int i = y; i < f.GetLength( 0 ); ++i )
+            int countСrossings = 0;
+            Queue<(int, int)> queue = new Queue<(int, int)>();
+            queue.Enqueue( (y, x) );
+            while ( queue.Count > 0 && countСrossings < 2 )
             {
-                for ( int j = x; j < f.GetLength( 1 ); ++j )
+                var pos = queue.Dequeue();
+                lake.points[ pos.Item1, pos.Item2 ] = Type.land;
+                // Print( lake.points );
+                if ( !queue.Contains( (pos.Item1 + 1, pos.Item2) ) )
                 {
-                    if ( f[ i, j ] == Type.water )
+                    if ( pos.Item1 + 1 < lake.points.GetLength( 0 ) )
                     {
-                        DeleteLand( f, i, j );
-                        count++;
+                        if ( lake.points[ pos.Item1 + 1, pos.Item2 ] == Type.newLake )
+                        {
+                            countСrossings++;
+                        }
+                        if ( lake.points[ pos.Item1 + 1, pos.Item2 ] == Type.water )
+                        {
+                            queue.Enqueue( (pos.Item1 + 1, pos.Item2) );
+                        }
+                    }
+                }
+                if ( !queue.Contains( (pos.Item1 - 1, pos.Item2) ) )
+                {
+                    if ( pos.Item1 - 1 >= 0 )
+                    {
+                        if ( lake.points[ pos.Item1 - 1, pos.Item2 ] == Type.newLake )
+                        {
+                            countСrossings++;
+                        }
+                        if ( lake.points[ pos.Item1 - 1, pos.Item2 ] == Type.water )
+                        {
+                            queue.Enqueue( (pos.Item1 - 1, pos.Item2) );
+                        }
+                    }
+                }
+
+                if ( !queue.Contains( (pos.Item1, pos.Item2 + 1) ) )
+                {
+                    if ( pos.Item2 + 1 < lake.points.GetLength( 1 ) )
+                    {
+                        if ( lake.points[ pos.Item1, pos.Item2 + 1 ] == Type.newLake )
+                        {
+                            countСrossings++;
+                        }
+                        if ( lake.points[ pos.Item1, pos.Item2 + 1 ] == Type.water )
+                        {
+                            queue.Enqueue( (pos.Item1, pos.Item2 + 1) );
+                        }
+                    }
+                }
+
+                if ( !queue.Contains( (pos.Item1, pos.Item2 - 1) ) )
+                {
+                    if ( pos.Item2 - 1 >= 0 )
+                    {
+                        if ( lake.points[ pos.Item1, pos.Item2 - 1 ] == Type.newLake )
+                        {
+                            countСrossings++;
+                        }
+                        if ( lake.points[ pos.Item1, pos.Item2 - 1 ] == Type.water )
+                        {
+                            queue.Enqueue( (pos.Item1, pos.Item2 - 1) );
+                        }
                     }
                 }
             }
-            return count;
-        }
 
-        static void DeleteLand( Type[,] f, int i, int j )
-        {
-            if ( f[ i, j ] == Type.water )
-            {
-                f[ i, j ] = Type.land;
-                // if ( i + 1 < f.GetLength( 0 ) )
-                DeleteLand( f, i + 1, j );
-                // if ( i - 1 >= 0 )
-                DeleteLand( f, i - 1, j );
-                // if ( j + 1 < f.GetLength( 1 ) )
-                DeleteLand( f, i, j + 1 );
-                // if ( j - 1 >= 0 )
-                DeleteLand( f, i, j - 1 );
-            }
+            return countСrossings;
         }
 
         private static List<Lake> ReadLakes()
@@ -209,6 +258,7 @@ namespace _1._9
     enum Type
     {
         water = '#',
-        land = '.'
+        land = '.',
+        newLake = 'O'
     }
 }

@@ -78,15 +78,12 @@ namespace _1._9
                                 {
                                     Lake points = (Lake)lake.Clone();
 
-                                    if ( LikeSizeIsOne( points, y, x + 1 ) )
-                                    {
-                                        return 1;
-                                    }
                                     points.points[ y, x + 1 ] = Type.newLake;
 
                                     var first = CountLandQueue( points, y, x );
                                     if ( first == 1 )
                                     {
+                                        Print( points.points );
                                         return 1;
                                     }
                                 }
@@ -100,14 +97,11 @@ namespace _1._9
                                 {
                                     Lake points = (Lake)lake.Clone();
 
-                                    if ( LikeSizeIsOneReverse( points, y + 1, x ) )
-                                    {
-                                        return 1;
-                                    }
                                     points.points[ y + 1, x ] = Type.newLake;
                                     var first = CountLandQueue( points, y, x );
                                     if ( first == 1 )
                                     {
+                                        // Print( points.points );
                                         return 1;
                                     }
                                 }
@@ -118,13 +112,6 @@ namespace _1._9
             }
 
             return 2;
-        }
-
-        static bool HasLand( List<Type[]> types)
-        {
-
-
-            return false;
         }
 
         private static bool LikeSizeIsOne( Lake points, int y, int x )
@@ -151,8 +138,7 @@ namespace _1._9
             while ( queue.Count > 0 && countСrossings < 2 )
             {
                 var pos = queue.Dequeue();
-                lake.points[ pos.Item1, pos.Item2 ] = Type.land;
-                // Print( lake.points );
+                lake.points[ pos.Item1, pos.Item2 ] = Type.firstLake;
                 if ( !queue.Contains( (pos.Item1 + 1, pos.Item2) ) )
                 {
                     if ( pos.Item1 + 1 < lake.points.GetLength( 0 ) )
@@ -296,6 +282,7 @@ namespace _1._9
     {
         water = '#',
         land = '.',
+        firstLake = 'x',
         newLake = 'O'
     }
 }

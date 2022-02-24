@@ -9,57 +9,114 @@ namespace _2._4
     {
         const string inputFileName = "input.txt";
         const string outputFileName = "output.txt";
+        const int MAX = int.MaxValue / 2;
 
         static void Main( string[] args )
         {
             string[] input = File.ReadAllLines( inputFileName );
-            int n = int.Parse( input[ 0 ] );
+            int countNumber = int.Parse( input[ 0 ] );
             List<int> fiel = input[ 1 ].Split( " " ).Select( ch => int.Parse( ch ) ).ToList();
 
-            List<int> next = Enumerable.Repeat( 0, n + 1 ).ToList();
-            List<int> last = Enumerable.Repeat( 0, 1 + 300 * 1000 ).ToList();
+            List<int> right = Enumerable.Repeat( 0, countNumber + 1 ).ToList();
+            List<int> left = Enumerable.Repeat( 0, 1 + 300 * 1000 ).ToList();
 
-            for ( int i = n; i >= 1; i-- )
+            for ( int i = countNumber; i >= 1; i-- )
             {
-                next[ i ] = last[ fiel[ i - 1 ] ];
-                last[ fiel[ i - 1 ] ] = i;
+                right[ i ] = left[ fiel[ i - 1 ] ];
+                left[ fiel[ i - 1 ] ] = i;
             }
-            List<int> result = new List<int>();
-            int from = 1;
-            result.Add( from );
-            int rangeFirst = 2;
-            while ( true )
+
+            var segmentLength = Enumerable.Repeat( MAX, countNumber + 1 ).ToList();
+            var next = Enumerable.Repeat( 0, countNumber + 1 ).ToList();
+            List<Pair> tree = Enumerable.Repeat( new Pair() { segmentLength = MAX, index = 0 }, 2 + 2 * countNumber ).ToList();
+
+
+            segmentLength[ countNumber ] = 0;
+            Update( tree, countNumber, new Pair { segmentLength = 0, index = countNumber } );
+            for ( int i = countNumber - 1; i >= 1; i-- )
             {
-                if ( next[ from ] == n )
+                if ( right[ i ] > 0 )
                 {
-                    Console.WriteLine( string.Join( " ", result.Select( ch => ch.ToString() ) ) );
-                    return;
+                    Pair ans = GetMin( tree, i + 1, right[ i ] );
+                    segmentLength[ i ] = ans.segmentLength + 1;
+                    next[ i ] = ans.index;
                 }
-                if ( next[ from ] == 0 )
+                Update( tree, i, new Pair { segmentLength = segmentLength[ i ], index = i } );
+            }
+
+            var result = "0";
+            if ( segmentLength[ 1 ] != MAX )
+            {
+                var res = new List<int>();
+                for ( int i = 1; i < countNumber; i = next[ i ] )
                 {
-                    Console.WriteLine( "0" );
-                    return;
+                    res.Add( i );
                 }
-                int rangeLast = next[ from ];
-                int maxNext = 0;
-                int maxNextIndex = 0;
-                for ( int i = rangeFirst; i <= rangeLast; i++ )
-                {
-                    if ( next[ i ] > maxNext )
-                    {
-                        maxNext = next[ i ];
-                        maxNextIndex = i;
-                    }
-                }
-                if ( maxNext <= rangeLast )
-                {
-                    Console.WriteLine( "0" );
-                    return;
-                }
-                rangeFirst = rangeLast + 1;
-                from = maxNextIndex;
-                result.Add( from );
+                result = String.Join( " ", res );
+            }
+            File.WriteAllText( outputFileName, result );
+        }
+
+        static void Update( List<Pair> tree, int index, Pair value )
+        {
+            index += tree.Count / 2;
+            tree[ index ] = value;
+            while ( index > 1 )
+            {
+                index /= 2;
+                tree[ index ] = Min( tree[ index * 2 ], tree[ index * 2 + 1 ] );
             }
         }
+
+        static Pair GetMin( List<Pair> tree, int left, int right )
+        {
+            left += tree.Count / 2;
+            right += tree.Count / 2;
+            Pair result = new Pair
+            {
+                segmentLength = MAX,
+                index = 0
+            };
+            while ( left <= right )
+            {
+                if ( left % 2 == 0 )
+                {
+                    left /= 2;
+                }
+                else
+                {
+                    result = Min( result, tree[ left ] );
+                    left++;
+                    left /= 2;
+                }
+                if ( right % 2 == 1 )
+                {
+                    right /= 2;
+                }
+                else
+                {
+                    result = Min( result, tree[ right ] );
+                    right--;
+                    right /= 2;
+                }
+            }
+
+            return result;
+        }
+
+        static Pair Min( Pair left, Pair right )
+        {
+            if ( left.segmentLength > right.segmentLength )
+                return right;
+            return left;
+        }
+
+        struct Pair
+        {
+            public int segmentLength;
+            public int index;
+        }
+
     }
+
 }

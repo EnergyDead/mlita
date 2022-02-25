@@ -41,7 +41,7 @@ namespace _2._4
         {
             string[] input = File.ReadAllLines( inputFileName );
             int countNumber = int.Parse( input[ 0 ] );
-            List<int> fiel = input[ 1 ].Split( " " ).Select( ch => int.Parse( ch ) ).ToList();
+            List<int> fiel = input[ 1 ].Trim().Split( " " ).Select( ch => int.Parse( ch ) ).ToList();
 
             List<int> right = Enumerable.Repeat( 0, countNumber + 1 ).ToList();
             List<int> left = Enumerable.Repeat( 0, 1 + 300 * 1000 ).ToList();
@@ -71,14 +71,16 @@ namespace _2._4
             }
 
             var result = "0";
-            if ( segmentLength[ 1 ] != MAX )
+            if ( segmentLength[ 1 ] < MAX )
             {
                 var res = new List<int>();
                 for ( int i = 1; i < countNumber; i = next[ i ] )
                 {
                     res.Add( i );
                 }
-                result = String.Join( " ", res );
+                result = res.Count.ToString();
+                result += '\n';
+                result += String.Join( " ", res );
             }
             File.WriteAllText( outputFileName, result );
         }

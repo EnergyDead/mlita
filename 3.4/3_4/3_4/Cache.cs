@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace _3_4
 {
     public class Cache
     {
-        private readonly ulong?[] _items;
+        private readonly BigInteger?[] _items;
         private int _maxX;
         private int _maxY;
 
@@ -14,17 +15,17 @@ namespace _3_4
         {
             _maxX = mX;
             _maxY = mY;
-            _items = new ulong?[mX * mY * mZ];
+            _items = new BigInteger?[mX * mY * mZ];
         }
 
-        public ulong? Get(int x, int y, int z)
+        public BigInteger? Get(int x, int y, int z)
         {
             var pos = GetPos(x, y, z);
 
             return _items[pos];
         }
 
-        public void Set(int x, int y, int z, ulong? value)
+        public void Set(int x, int y, int z, BigInteger? value)
         {
             var pos = GetPos(x, y, z);
 

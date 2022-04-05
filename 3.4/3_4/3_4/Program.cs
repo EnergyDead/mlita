@@ -14,6 +14,7 @@
 */
 using System;
 using System.IO;
+using System.Numerics;
 
 namespace _3_4
 {
@@ -24,11 +25,11 @@ namespace _3_4
         public static void Main(string[] args)
         {
             int n = int.Parse(File.ReadAllText(inputFileName));
-            ulong ticketsCoun = CalculateTicketsCoun(n);
-            Console.WriteLine(ticketsCoun);
+            BigInteger ticketsCoun = CalculateTicketsCoun(n);
+            File.WriteAllText( outputFileName, ticketsCoun.ToString() );
         }
 
-        public static ulong CalculateTicketsCoun(int digitsCount)
+        public static BigInteger CalculateTicketsCoun(int digitsCount)
         {
 
             Cache cache = new Cache(digitsCount + 1, 10, digitsCount * 9 + 1);
@@ -36,7 +37,7 @@ namespace _3_4
             {
                 return 0;
             }
-            ulong count = 0;
+            BigInteger count = 0;
 
             for(int lastDigit = 0; lastDigit <= 9; lastDigit++)
             {
@@ -44,8 +45,8 @@ namespace _3_4
                 for(int digitsSum = GetMinDigitsSum(lastDigit, digitsCount); digitsSum <= maxDigitsSum; digitsSum++)
                 {
                     var numbersCount = Calculate(digitsCount, lastDigit, digitsSum, cache);
-                    ulong temp0 = 0;
-                    ulong temp9 = 0;
+                    BigInteger temp0 = 0;
+                    BigInteger temp9 = 0;
                     if (lastDigit != 0)
                     {
                         temp0 = Calculate(digitsCount, lastDigit - 1, digitsSum, cache);
@@ -63,7 +64,7 @@ namespace _3_4
             return count;
         }
 
-        private static ulong Calculate(int digitsCount, int lastDigit, int digitsSum, Cache cache)
+        private static BigInteger Calculate(int digitsCount, int lastDigit, int digitsSum, Cache cache)
         {
             {
                 if(digitsSum < 0)
@@ -76,26 +77,20 @@ namespace _3_4
                 }
                 if(digitsCount == 1)
                 {
-                    return (ulong) (lastDigit == digitsSum && InRange(lastDigit, 0, 9) ? 1 : 0);
+                    return (BigInteger) (lastDigit == digitsSum && InRange(lastDigit, 0, 9) ? 1 : 0);
                 }
                 if(lastDigit == digitsSum && digitsSum == 0)
                 {
                     return 1;
                 }
 
-                ulong? item = cache.Get(digitsCount, lastDigit, digitsSum);
-                var numbersCount = Calculate(digitsCount - 1, lastDigit, digitsSum - lastDigit, cache);
-                ulong temp0 = 0;
+                BigInteger? item = cache.Get(digitsCount, lastDigit, digitsSum);
+                BigInteger temp = 0;
                 if (lastDigit != 0)
                 {
-                    temp0 = Calculate(digitsCount - 1, lastDigit - 1, digitsSum - lastDigit, cache);
+                    temp = Calculate(digitsCount - 1, lastDigit - 1, digitsSum - lastDigit, cache);
                 }
-                ulong temp9 = 0;
-                if(lastDigit != 9)
-                {
-                    temp9 = Calculate(digitsCount - 1, lastDigit + 1, digitsSum - lastDigit, cache);
-                }
-                item ??= numbersCount + temp0 + temp9;
+                item ??= Calculate( digitsCount - 1, lastDigit, digitsSum - lastDigit, cache ) + temp + ( lastDigit == 9 ? 0 : Calculate( digitsCount - 1, lastDigit + 1, digitsSum - lastDigit, cache ) );
                 cache.Set(digitsCount, lastDigit, digitsSum, item);
 
                 return item.Value;

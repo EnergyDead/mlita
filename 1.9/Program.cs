@@ -38,7 +38,7 @@ namespace _1._9
 {
     internal class Program
     {
-        const string inputFileName = "input.txt";
+        const string inputFileName = "input8.txt";
         const string outputFileName = "output.txt";
         static void Main( string[] args )
         {
@@ -70,74 +70,42 @@ namespace _1._9
                     {
                         if ( x + 1 < lake.width && lake.points[ y, x + 1 ] == Type.water )
                         {
-                            if ( ( ( y + 1 ) >= lake.height ) || ( lake.points[ y + 1, x ] == Type.land || lake.points[ y + 1, x + 1 ] == Type.land ) )
+                            if ( ( ( y + 1 ) >= lake.height ) || ( lake.points[ y + 1, x ] == Type.land || lake.points[ y + 1, x + 1 ] == Type.land )
+                                                              || ( lake.points[ y + 1, x ] == Type.landGood || lake.points[ y + 1, x + 1 ] == Type.landGood ) )
                             {
-                                if ( ( ( y - 1 ) < 0 ) || ( lake.points[ y - 1, x ] == Type.land || lake.points[ y - 1, x + 1 ] == Type.land ) )
+                                if ( ( ( y - 1 ) < 0 ) || ( lake.points[ y - 1, x ] == Type.land || lake.points[ y - 1, x + 1 ] == Type.land )
+                                                       || ( lake.points[ y - 1, x ] == Type.land || lake.points[ y - 1, x + 1 ] == Type.landGood ) )
                                 {
                                     Lake points = (Lake)lake.Clone();
                                     points.points[ y, x + 1 ] = Type.newLake;
-                                    var first = CountLandQueue( points, y, x );
-                                    // Print( points.points );
 
-                                    if ( first.Item1 == 1 )
+                                    if ( CorrectDam( points, y, x ) )
                                     {
-                                        var hasFirstLakeLand = ( first.Item2.Count == 0 );
-                                        if ( !hasFirstLakeLand )
-                                        {
-                                            hasFirstLakeLand = HasPathToland( (Lake)lake.Clone(), first.Item2 );
-                                        }
-                                        if ( hasFirstLakeLand )
-                                        {
-                                            Lake points2 = (Lake)lake.Clone();
-                                            points2.points[ y, x + 1 ] = Type.newLake;
-                                            var second = HasPathToLandSacond( points2, y, x + 1 );
-                                            var hasSecondLakeLand = ( first.Item2.Count == 0 );
-                                            if ( hasSecondLakeLand )
-                                            {
-                                                return 1;
-                                            }
-                                            if ( HasPathToland( lake, second ) )
-                                            {
-                                                return 1;
-                                            }
-                                        }
+                                        bool a = CheackedLand( points.points, (y, x) );
+                                        bool a2 = CheackedLand2( points.points, (y, x + 1) );
+                                        if ( a && a2 )
+                                            return 1;
                                     }
                                 }
                             }
                         }
                         if ( y + 1 < lake.height && lake.points[ y + 1, x ] == Type.water )
                         {
-                            if ( ( ( x + 1 ) >= lake.width ) || ( lake.points[ y, x + 1 ] == Type.land || lake.points[ y + 1, x + 1 ] == Type.land ) )
+                            if ( ( ( x + 1 ) >= lake.width ) || ( lake.points[ y, x + 1 ] == Type.land || lake.points[ y + 1, x + 1 ] == Type.land )
+                                                             || ( lake.points[ y, x + 1 ] == Type.landGood || lake.points[ y + 1, x + 1 ] == Type.landGood ) )
                             {
-                                if ( ( ( x - 1 ) < 0 ) || ( lake.points[ y, x - 1 ] == Type.land || lake.points[ y + 1, x - 1 ] == Type.land ) )
+                                if ( ( ( x - 1 ) < 0 ) || ( lake.points[ y, x - 1 ] == Type.land || lake.points[ y + 1, x - 1 ] == Type.land )
+                                                       || ( lake.points[ y, x - 1 ] == Type.land || lake.points[ y + 1, x - 1 ] == Type.landGood ) )
                                 {
                                     Lake points = (Lake)lake.Clone();
                                     points.points[ y + 1, x ] = Type.newLake;
-                                    var first = CountLandQueue( points, y, x );
-                                    // Print( points.points );
 
-                                    if ( first.Item1 == 1 )
+                                    if ( CorrectDam( points, y, x ) )
                                     {
-                                        var hasFirstLakeLand = ( first.Item2.Count == 0 );
-                                        if ( !hasFirstLakeLand )
-                                        {
-                                            hasFirstLakeLand = HasPathToland( (Lake)lake.Clone(), first.Item2 );
-                                        }
-                                        if ( hasFirstLakeLand )
-                                        {
-                                            Lake points2 = (Lake)lake.Clone();
-                                            points.points[ y, x ] = Type.newLake;
-                                            var second = HasPathToLandSacond( points2, y + 1, x );
-                                            var hasSecondLakeLand = ( first.Item2.Count == 0 );
-                                            if ( hasSecondLakeLand )
-                                            {
-                                                return 1;
-                                            }
-                                            if ( HasPathToland( lake, second ) )
-                                            {
-                                                return 1;
-                                            }
-                                        }
+                                        bool a = CheackedLand( points.points, (y, x) );
+                                        bool a2 = CheackedLand2( points.points, (y, x + 1) );
+                                        if ( a && a2 )
+                                            return 1;
                                     }
                                 }
                             }
@@ -149,201 +117,135 @@ namespace _1._9
             return 2;
         }
 
-        private static Queue<(int, int)> HasPathToLandSacond( Lake lake, int y, int x )
+        private static bool CheackedLand2( Type[,] points, (int y, int x) p )
         {
-            bool hasPathToLand = false;
-            var landQueue = new Queue<(int, int)>();
+            bool hasLand = false;
             var queue = new Queue<(int, int)>();
-            queue.Enqueue( (y, x) );
-            while ( queue.Count > 0 )
+            queue.Enqueue( p );
+            while ( queue.Count > 0 || hasLand )
             {
                 var pos = queue.Dequeue();
-                lake.points[ pos.Item1, pos.Item2 ] = Type.land;
+                points[ pos.Item1, pos.Item2 ] = Type.newNewLake;
                 if ( !queue.Contains( (pos.Item1 + 1, pos.Item2) ) )
                 {
-                    if ( pos.Item1 + 1 < lake.points.GetLength( 0 ) )
+                    if ( points[ pos.Item1 + 1, pos.Item2 ] == Type.landGood )
                     {
-                        if ( lake.points[ pos.Item1 + 1, pos.Item2 ] == Type.water )
-                        {
-                            queue.Enqueue( (pos.Item1 + 1, pos.Item2) );
-                        }
-                        else
-                        {
-                            landQueue.Enqueue( (pos.Item1 + 1, pos.Item2) );
-                        }
+                        return true;
                     }
-                    else
+                    if ( points[ pos.Item1 + 1, pos.Item2 ] == Type.water )
                     {
-                        hasPathToLand = true;
+                        queue.Enqueue( (pos.Item1 + 1, pos.Item2) );
                     }
                 }
                 if ( !queue.Contains( (pos.Item1 - 1, pos.Item2) ) )
                 {
-                    if ( pos.Item1 - 1 >= 0 )
+                    if ( points[ pos.Item1 - 1, pos.Item2 ] == Type.landGood )
                     {
-                        if ( lake.points[ pos.Item1 - 1, pos.Item2 ] == Type.water )
-                        {
-                            queue.Enqueue( (pos.Item1 - 1, pos.Item2) );
-                        }
-                        else
-                        {
-                            landQueue.Enqueue( (pos.Item1 - 1, pos.Item2) );
-                        }
+                        return true;
                     }
-                    else
+                    if ( points[ pos.Item1 - 1, pos.Item2 ] == Type.water )
                     {
-                        hasPathToLand = true;
+                        queue.Enqueue( (pos.Item1 - 1, pos.Item2) );
                     }
                 }
-
                 if ( !queue.Contains( (pos.Item1, pos.Item2 + 1) ) )
                 {
-                    if ( pos.Item2 + 1 < lake.points.GetLength( 1 ) )
+
+                    if ( points[ pos.Item1, pos.Item2 + 1 ] == Type.landGood )
                     {
-                        if ( lake.points[ pos.Item1, pos.Item2 + 1 ] == Type.water )
-                        {
-                            queue.Enqueue( (pos.Item1, pos.Item2 + 1) );
-                        }
-                        else
-                        {
-                            landQueue.Enqueue( (pos.Item1, pos.Item2 + 1) );
-                        }
+                        return true;
                     }
-                    else
+                    if ( points[ pos.Item1, pos.Item2 + 1 ] == Type.water )
                     {
-                        hasPathToLand = true;
+                        queue.Enqueue( (pos.Item1, pos.Item2 + 1) );
                     }
                 }
-
                 if ( !queue.Contains( (pos.Item1, pos.Item2 - 1) ) )
                 {
-                    if ( pos.Item2 - 1 >= 0 )
+                    if ( points[ pos.Item1, pos.Item2 - 1 ] == Type.landGood )
                     {
-                        if ( lake.points[ pos.Item1, pos.Item2 - 1 ] == Type.water )
-                        {
-                            queue.Enqueue( (pos.Item1, pos.Item2 - 1) );
-                        }
-                        else
-                        {
-                            landQueue.Enqueue( (pos.Item1, pos.Item2 - 1) );
-                        }
+                        return true;
                     }
-                    else
+                    if ( points[ pos.Item1, pos.Item2 - 1 ] == Type.water )
                     {
-                        hasPathToLand = true;
+                        queue.Enqueue( (pos.Item1, pos.Item2 - 1) );
                     }
                 }
             }
-            if ( hasPathToLand )
-            {
-                landQueue.Clear();
-            }
 
-            return landQueue;
+            return false;
         }
 
-        private static bool LikeSizeIsOne( Lake points, int y, int x )
+        private static bool CheackedLand( Type[,] points, (int y, int x) p )
         {
-            var a = ( x + 1 < points.points.GetLength( 1 ) && points.points[ y, x + 1 ] == Type.land );
-            var b = ( y + 1 < points.points.GetLength( 0 ) && points.points[ y + 1, x ] == Type.land );
-            var c = ( y - 1 >= 0 && points.points[ y - 1, x ] == Type.land );
-            return a && b && c;
-        }
-
-        private static bool LikeSizeIsOneReverse( Lake points, int y, int x )
-        {
-            var a = ( y + 1 < points.points.GetLength( 0 ) && points.points[ y + 1, x ] == Type.land );
-            var b = ( x + 1 < points.points.GetLength( 1 ) && points.points[ y, x + 1 ] == Type.land );
-            var c = ( x - 1 >= 0 && points.points[ y, x - 1 ] == Type.land );
-            return a && b && c;
-        }
-
-        static bool HasPathToland( Lake lake, Queue<(int, int)> queue )
-        {
-            bool result = false;
-            while ( queue.Count > 0 )
+            Type type = points[ p.y, p.x ];
+            bool hasLand = false;
+            var queue = new Queue<(int, int)>();
+            queue.Enqueue( p );
+            while ( queue.Count > 0 || hasLand )
             {
                 var pos = queue.Dequeue();
-                lake.points[ pos.Item1, pos.Item2 ] = Type.oldLand;
+                points[ pos.Item1, pos.Item2 ] = Type.oldnewLand;
                 if ( !queue.Contains( (pos.Item1 + 1, pos.Item2) ) )
                 {
-                    if ( pos.Item1 + 1 < lake.points.GetLength( 0 ) -1 )
+                    if ( points[ pos.Item1 + 1, pos.Item2 ] == Type.landGood )
                     {
-                        if ( lake.points[ pos.Item1 + 1, pos.Item2 ] == Type.land )
-                        {
-                            queue.Enqueue( (pos.Item1 + 1, pos.Item2) );
-                        }
+                        return true;
                     }
-                    else
+                    if ( points[ pos.Item1 + 1, pos.Item2 ] == type )
                     {
-                        Console.WriteLine( lake.points[ pos.Item1, pos.Item2 ] );
-                        result = true;
-                        break;
-
+                        queue.Enqueue( (pos.Item1 + 1, pos.Item2) );
                     }
                 }
                 if ( !queue.Contains( (pos.Item1 - 1, pos.Item2) ) )
                 {
-                    if ( pos.Item1 - 1 > 0 )
+                    if ( points[ pos.Item1 - 1, pos.Item2 ] == Type.landGood )
                     {
-                        if ( lake.points[ pos.Item1 - 1, pos.Item2 ] == Type.land )
-                        {
-                            queue.Enqueue( (pos.Item1 - 1, pos.Item2) );
-                        }
+                        return true;
                     }
-                    else
+                    if ( points[ pos.Item1 - 1, pos.Item2 ] == type )
                     {
-                        result = true;
-                        break;
+                        queue.Enqueue( (pos.Item1 - 1, pos.Item2) );
                     }
                 }
-
                 if ( !queue.Contains( (pos.Item1, pos.Item2 + 1) ) )
                 {
-                    if ( pos.Item2 + 1 < lake.points.GetLength( 1 ) -1 )
+
+                    if ( points[ pos.Item1, pos.Item2 + 1 ] == Type.landGood )
                     {
-                        if ( lake.points[ pos.Item1, pos.Item2 + 1 ] == Type.land )
-                        {
-                            queue.Enqueue( (pos.Item1, pos.Item2 + 1) );
-                        }
+                        return true;
                     }
-                    else
+                    if ( points[ pos.Item1, pos.Item2 + 1 ] == type )
                     {
-                        result = true;
-                        break;
+                        queue.Enqueue( (pos.Item1, pos.Item2 + 1) );
                     }
                 }
-
                 if ( !queue.Contains( (pos.Item1, pos.Item2 - 1) ) )
                 {
-                    if ( pos.Item2 - 1 > 0 )
+                    if ( points[ pos.Item1, pos.Item2 - 1 ] == Type.landGood )
                     {
-                        if ( lake.points[ pos.Item1, pos.Item2 - 1 ] == Type.land )
-                        {
-                            queue.Enqueue( (pos.Item1, pos.Item2 - 1) );
-                        }
+                        return true;
                     }
-                    else
+                    if ( points[ pos.Item1, pos.Item2 - 1 ] == type )
                     {
-                        result = true;
-                        break;
+                        queue.Enqueue( (pos.Item1, pos.Item2 - 1) );
                     }
                 }
             }
-            return result;
+
+            return false;
         }
 
-        static (int, Queue<(int, int)>) CountLandQueue( Lake lake, int y, int x )
+        static bool CorrectDam( Lake lake, int y, int x )
         {
             int countСrossings = 0;
-            bool hasPathToLand = false;
-            var landQueue = new Queue<(int, int)>();
             var queue = new Queue<(int, int)>();
             queue.Enqueue( (y, x) );
             while ( queue.Count > 0 && countСrossings < 2 )
             {
                 var pos = queue.Dequeue();
                 lake.points[ pos.Item1, pos.Item2 ] = Type.oldLand;
+
                 if ( !queue.Contains( (pos.Item1 + 1, pos.Item2) ) )
                 {
                     if ( pos.Item1 + 1 < lake.points.GetLength( 0 ) )
@@ -351,19 +253,13 @@ namespace _1._9
                         if ( lake.points[ pos.Item1 + 1, pos.Item2 ] == Type.newLake )
                         {
                             countСrossings++;
+                            if ( countСrossings > 1 )
+                                return false;
                         }
                         if ( lake.points[ pos.Item1 + 1, pos.Item2 ] == Type.water )
                         {
                             queue.Enqueue( (pos.Item1 + 1, pos.Item2) );
                         }
-                        else
-                        {
-                            landQueue.Enqueue( (pos.Item1 + 1, pos.Item2) );
-                        }
-                    }
-                    else
-                    {
-                        hasPathToLand = true;
                     }
                 }
                 if ( !queue.Contains( (pos.Item1 - 1, pos.Item2) ) )
@@ -373,22 +269,15 @@ namespace _1._9
                         if ( lake.points[ pos.Item1 - 1, pos.Item2 ] == Type.newLake )
                         {
                             countСrossings++;
+                            if ( countСrossings > 1 )
+                                return false;
                         }
                         if ( lake.points[ pos.Item1 - 1, pos.Item2 ] == Type.water )
                         {
                             queue.Enqueue( (pos.Item1 - 1, pos.Item2) );
                         }
-                        else
-                        {
-                            landQueue.Enqueue( (pos.Item1 - 1, pos.Item2) );
-                        }
-                    }
-                    else
-                    {
-                        hasPathToLand = true;
                     }
                 }
-
                 if ( !queue.Contains( (pos.Item1, pos.Item2 + 1) ) )
                 {
                     if ( pos.Item2 + 1 < lake.points.GetLength( 1 ) )
@@ -396,22 +285,15 @@ namespace _1._9
                         if ( lake.points[ pos.Item1, pos.Item2 + 1 ] == Type.newLake )
                         {
                             countСrossings++;
+                            if ( countСrossings > 1 )
+                                return false;
                         }
                         if ( lake.points[ pos.Item1, pos.Item2 + 1 ] == Type.water )
                         {
                             queue.Enqueue( (pos.Item1, pos.Item2 + 1) );
                         }
-                        else
-                        {
-                            landQueue.Enqueue( (pos.Item1, pos.Item2 + 1) );
-                        }
-                    }
-                    else
-                    {
-                        hasPathToLand = true;
                     }
                 }
-
                 if ( !queue.Contains( (pos.Item1, pos.Item2 - 1) ) )
                 {
                     if ( pos.Item2 - 1 >= 0 )
@@ -419,30 +301,22 @@ namespace _1._9
                         if ( lake.points[ pos.Item1, pos.Item2 - 1 ] == Type.newLake )
                         {
                             countСrossings++;
+                            if ( countСrossings > 1 )
+                                return false;
                         }
                         if ( lake.points[ pos.Item1, pos.Item2 - 1 ] == Type.water )
                         {
                             queue.Enqueue( (pos.Item1, pos.Item2 - 1) );
                         }
-                        else
-                        {
-                            landQueue.Enqueue( (pos.Item1, pos.Item2 - 1) );
-                        }
-                    }
-                    else
-                    {
-                        hasPathToLand = true;
+
                     }
                 }
             }
-            if ( hasPathToLand )
-            {
-                landQueue.Clear();
-            }
 
-            return (countСrossings, landQueue);
+            return countСrossings == 1;
         }
 
+        #region Read
         private static List<Lake> ReadLakes()
         {
             Queue<string> input = new Queue<string>();
@@ -462,7 +336,7 @@ namespace _1._9
                 {
                     for ( int x = 0; x < lake.width; x++ )
                     {
-                        lake.points[ y, x ] = Type.land;
+                        lake.points[ y, x ] = Type.landGood;
                     }
                 }
 
@@ -474,10 +348,47 @@ namespace _1._9
                         lake.points[ y + 1, x + 1 ] = (Type)line[ x ];
                     }
                 }
+                FillLand( lake.points );
                 lakes.Add( lake );
             }
 
             return lakes;
+        }
+
+        private static void FillLand( Type[,] lake )
+        {
+            int width = lake.GetLength( 0 );
+            int height = lake.GetLength( 1 );
+
+            int wavelength = 0;
+            bool isDorw;
+            Point position = new Point();
+            Point adjacent = new Point();
+            do
+            {
+                isDorw = false;
+                for ( position.y = 0; position.y < width; ++position.y )
+                {
+                    for ( position.x = 0; position.x < height; ++position.x )
+                    {
+                        if ( lake[ position.y, position.x ] == Type.landGood )
+                        {
+                            for ( Direction direction = 0; direction <= Direction.up; direction++ )
+                            {
+                                SwitchDirection( direction, position, ref adjacent );
+
+                                if ( IsNewPositionCorrect( adjacent, height, width ) && ( lake[ adjacent.y, adjacent.x ] == Type.land ) )
+                                {
+                                    isDorw = true;
+                                    lake[ adjacent.y, adjacent.x ] = Type.landGood;
+                                }
+                            }
+                        }
+
+                    }
+                }
+                wavelength++;
+            } while ( isDorw );
         }
 
         /// <summary>
@@ -496,6 +407,48 @@ namespace _1._9
             }
             Console.WriteLine();
         }
+
+        private static void SwitchDirection( Direction direction, Point position, ref Point adjacent )
+        {
+            switch ( direction )
+            {
+                case Direction.left:
+                    adjacent.x = position.x - 1;
+                    adjacent.y = position.y;
+                    break;
+                case Direction.right:
+                    adjacent.x = position.x + 1;
+                    adjacent.y = position.y;
+                    break;
+                case Direction.down:
+                    adjacent.x = position.x;
+                    adjacent.y = position.y - 1;
+                    break;
+                case Direction.up:
+                    adjacent.x = position.x;
+                    adjacent.y = position.y + 1;
+                    break;
+            }
+        }
+
+        public struct Point
+        {
+            public int x;
+            public int y;
+        }
+
+        public enum Direction
+        {
+            left,
+            right,
+            down,
+            up
+        }
+        private static bool IsNewPositionCorrect( Point adjacent, int height, int width )
+        {
+            return adjacent.x >= 0 && adjacent.x < height && adjacent.y >= 0 && adjacent.y < width;
+        }
+        #endregion
     }
 
     struct Lake : ICloneable
@@ -517,13 +470,16 @@ namespace _1._9
 
             return lake;
         }
-    }
 
+    }
     enum Type
     {
         water = '#',
         land = '.',
+        landGood = ',',
         newLake = 'O',
-        oldLand = 'x'
+        oldLand = 'x',
+        newNewLake = 'z',
+        oldnewLand = 's'
     }
 }

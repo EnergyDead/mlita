@@ -1,4 +1,46 @@
-﻿using System;
+﻿/*
+     4.8. Логическая функция (7)
+Недавно на уроке информатики ученики одного из классов изучили логические
+или булевы функции. Напомним, что булева функция f сопоставляет значениям 
+двух булевых аргументов, каждый из которых может быть равен 0 или 1, третье булево значение, 
+называемое результатом. Для учеников, которые выразили желание более подробно изучать эту тему, 
+учительница информатики на дополнительном уроке ввела в рассмотрение понятие цепного вычисления булевой функции f.
+Если задана булева функция f и набор из N булевых значений a1, a2, ..., aN , то результат цепного вычисления этой 
+булевой функции определяется следующим образом:
+если N = 1, то он равен a1;
+если N > 1, то он равен результату цепного вычисления булевой функции f для набора из (N–1) булевого значения f(a1,a2),
+a3, …, aN, который получается путем замены первых двух булевых значений в наборе из N булевых значений
+на единственное булево значение – результат вычисления функции f от a1 и a2.
+Например, если изначально задано три булевых значения: a1 = 0, a2 = 1, a3 = 0, а функция f – ИЛИ (OR),
+то после первого шага получается два булевых значения (0 OR 1) и 0, то есть 1 и 0. После второго (и последнего)
+шага получается результат цепного вычисления, равный 1, так как 1 OR 0 = 1.
+В конце дополнительного урока учительница информатики написала на доске булеву функцию f и попросила 
+одного из учеников выбрать такие N булевых значений ai, чтобы результат цепного вычисления этой функции
+был равен единице. Более того, она попросила найти такой набор булевых значений, в котором число единиц было бы как можно большим.
+Требуется написать программу, которая решала бы поставленную учительницей задачу. Использовать подход
+динамического программирования.
+Ввод из файла INPUT.TXT. Первая строка содержит одно натуральное число N (2 ≤ N ≤ 100 000). Вторая 
+строка содержит описание булевой функции в виде четырех чисел, каждое из которых – ноль или единица. 
+Первое из них есть результат вычисления функции в случае, если оба аргумента – нули, второе – результат
+в случае, если первый аргумент – ноль, второй – единица, третье – результат в случае, если первый аргумент – единица,
+второй – ноль, а четвертый – в случае, если оба аргумента – единицы.
+Вывод в файл OUTUT.TXT. Необходимо вывести строку из N символов, определяющих искомый набор булевых 
+значений ai с максимально возможным числом единиц. Если ответов несколько, требуется вывести любой из них. 
+Если такого набора не существует, выведите в выходной файл слово No.
+Примеры
+Ввод 1     Ввод 2     Ввод 3
+4          5          6
+0110       0100       0000
+
+Вывод 1    Вывод 2    Вывод 3
+1011       11111      No
+
+
+    Visual Studio  2019
+    Васильев Руслан ПС-24
+*/
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,83 +50,92 @@ namespace _4._8
     internal class Program
     {
 
-        static int MAX_N = 100000;
-        static int MIN_N = 2;
+        static readonly int MAX_N = 100000;
+        static readonly int MIN_N = 2;
         const string inputFileName = "input.txt";
         const string outputFileName = "output.txt";
-        static void Main( string[] args )
+
+        static void Main()
         {
-            var input = File.ReadAllLines( inputFileName );
-            int N = int.Parse( input[ 0 ] );
-            string boolean = input[ 1 ];
-            List<List<int>> dynamice = fill();
-            List<List<int>> method = Enumerable.Repeat( Enumerable.Repeat( 0, MIN_N ).ToList(), MAX_N ).ToList();
-            List<List<int>> result = Enumerable.Repeat( Enumerable.Repeat( 0, MIN_N ).ToList(), MAX_N ).ToList();
-            dynamice[ 1 ][ 0 ] = 0;
-            dynamice[ 1 ][ 1 ] = 1;
-            result[ 1 ][ 0 ] = 0;
-            result[ 1 ][ 1 ] = 1;
-            for ( int i = MIN_N; i <= N; ++i )
+            var input = File.ReadAllLines(inputFileName);
+            
+            int N = int.Parse(input[0]);
+            string boolean = input[1];
+            var dynamice = Fill();
+
+            var mtdh = Enumerable.Repeat(Enumerable.Repeat(0, MIN_N).ToList(), MAX_N).ToList();
+            var res = Enumerable.Repeat(Enumerable.Repeat(0, MIN_N).ToList(), MAX_N).ToList();
+
+            dynamice[1][0] = 0;
+            dynamice[1][1] = 1;
+
+            res[1][0] = 0;
+            res[1][1] = 1;
+            for (int i = MIN_N; i <= N; ++i)
             {
-                dynamice[ i ][ 0 ] = -1;
-                dynamice[ i ][ 1 ] = -1;
-                for ( var j = 0; j <= 1; ++j )
+                dynamice[i][0] = -1;
+                dynamice[i][1] = -1;
+
+                for (var j = 0; j <= 1; ++j)
                 {
-                    for ( var k = 0; k <= 1; ++k )
+                    for (var k = 0; k <= 1; ++k)
                     {
-                        int b = ToInt( boolean[ j * 2 + k ] );
-                        if ( ( dynamice[ i - 1 ][ j ] >= 0 ) && ( dynamice[ i ][ b ] < dynamice[ i - 1 ][ j ] + k ) )
+                        int b = ToInt(boolean[j * 2 + k]);
+
+                        if ((dynamice[i - 1][j] >= 0) 
+                        && (dynamice[i][b] < dynamice[i - 1][j] + k))
                         {
-                            dynamice[ i ][ b ] = dynamice[ i - 1 ][ j ] + k;
-                            method[ i ][ b ] = j;
-                            result[ i ][ b ] = k;
+                            dynamice[i][b] = dynamice[i - 1][j] + k;
+
+                            mtdh[i][b] = j;
+                            res[i][b] = k;
                         }
                     }
                 }
             }
 
-            if ( dynamice[ N ][ 1 ] < 0 )
+            if (dynamice[N][1] < 0)
             {
-                File.WriteAllText( outputFileName, "No" );
+                File.WriteAllText(outputFileName, "No");
                 return;
             }
-            List<int> buffer = new List<int>();
-            for ( int i = 0; i < MAX_N; i++ )
+
+            var temp = new List<int>();
+            for (int i = 0; i < MAX_N; i++)
             {
-                buffer.Add( 0 );
+                temp.Add(0);
             }
+
             int z = 1;
-            for ( int i = N; i >= 1; --i )
+            for (int i = N; i >= 1; --i)
             {
-                buffer[ i ] = result[ i ][ z ];
-                z = method[ i ][ z ];
+                temp[i] = res[i][z];
+                z = mtdh[i][z];
             }
-            string message = string.Empty;
-            for ( int i = 0; i <= N; i++ )
+
+            string resultMsg = string.Empty;
+            for (int i = 0; i <= N; i++)
             {
-                message += buffer[ i ].ToString();
+                resultMsg += temp[i].ToString();
             }
-            Console.WriteLine(message);
+            File.WriteAllText(outputFileName, resultMsg);
         }
 
-        private static List<List<int>> fill()
+        private static List<List<int>> Fill()
         {
-            List<List<int>> result = new List<List<int>>();
-            for ( int i = 0; i < MAX_N; i++ )
+            var result = new List<List<int>>();
+            for (int i = 0; i < MAX_N; i++)
             {
-                result.Add( new List<int>() );
-                for ( int j = 0; j < MIN_N; j++ )
+                result.Add(new List<int>());
+                for (int j = 0; j < MIN_N; j++)
                 {
-                    result[ i ].Add( 0 );
+                    result[i].Add(0);
                 }
             }
 
             return result;
         }
 
-        private static int ToInt( char value )
-        {
-            return value - '0';
-        }
+        private static int ToInt(char value) => value - '0';
     }
 }

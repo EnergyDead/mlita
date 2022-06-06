@@ -5,6 +5,8 @@ VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pyramid", "pyramid\pyramid.csproj", "{4AD33557-417C-473C-82AE-98DD3E23E7B8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "generateTests", "generateTests\generateTests.csproj", "{69265559-BE06-46B7-BBB6-C1BEDE90EDCA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{4AD33557-417C-473C-82AE-98DD3E23E7B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4AD33557-417C-473C-82AE-98DD3E23E7B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4AD33557-417C-473C-82AE-98DD3E23E7B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69265559-BE06-46B7-BBB6-C1BEDE90EDCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69265559-BE06-46B7-BBB6-C1BEDE90EDCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69265559-BE06-46B7-BBB6-C1BEDE90EDCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69265559-BE06-46B7-BBB6-C1BEDE90EDCA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -5,7 +5,6 @@ int height = int.Parse(inp[0]);
 
 if (height == 0)
 {
-
     return;
 }
 
@@ -24,7 +23,8 @@ for (int i = 1; i < height; i++)
     {
         var node = new Tree()
         {
-            Value = row[j]
+            Value = row[j],
+            H = i
         };
 
         if (trees.ContainsKey((i - 1, j - 1)))
@@ -39,3 +39,34 @@ for (int i = 1; i < height; i++)
         trees.Add((i, j), node);
     }
 }
+
+List<int> path = new();
+Dictionary<int, List<int>> paths = new Dictionary<int, List<int>>();
+int temp = 0;
+
+Sum(head);
+
+void Sum(Tree node)
+{
+    checked
+    {
+        temp += node.Value;
+    }
+    path.Add(node.Value);
+    if (node.Right == null || node.Left == null)
+    {
+        paths.TryAdd(temp, new List<int>(path));
+        return;
+    }
+    Sum(node.Left!);
+    temp -= node.Left.Value;
+    path.RemoveAt(path.Count - 1);
+    Sum(node.Right!);
+    temp -= node.Right.Value;
+    path.RemoveAt(path.Count - 1);
+}
+string result = paths.Keys.Max().ToString();
+result += '\n';
+result += string.Join(" ", paths[paths.Keys.Max()]);
+
+File.WriteAllText("output.txt", result);
